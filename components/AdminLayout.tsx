@@ -51,8 +51,17 @@ export default function AdminLayout({
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push("/admin/login");
-    router.refresh();
+    window.location.href = "/admin/login";
+  };
+
+  const closeSidebar = () => {
+    console.log("=== CLOSE SIDEBAR CALLED ===");
+    setSidebarOpen(false);
+  };
+
+  const openSidebar = () => {
+    console.log("=== OPEN SIDEBAR CALLED ===");
+    setSidebarOpen(true);
   };
 
   const isActive = (href: string) => pathname === href;
@@ -68,21 +77,21 @@ export default function AdminLayout({
         fontFamily: "inherit",
       }}
     >
-      {/* SIDEBAR OVERLAY (mobile) */}
+      {/* ===== OVERLAY (mobile) ===== */}
       {sidebarOpen && (
         <div
-          onClick={() => setSidebarOpen(false)}
+          onClick={closeSidebar}
           style={{
             position: "fixed",
             inset: 0,
             background: "rgba(0,0,0,0.7)",
-            zIndex: 98,
+            zIndex: 998,
           }}
           className="admin-overlay"
         />
       )}
 
-      {/* SIDEBAR */}
+      {/* ===== SIDEBAR ===== */}
       <aside
         style={{
           width: 260,
@@ -94,12 +103,12 @@ export default function AdminLayout({
           top: 0,
           bottom: 0,
           left: 0,
-          zIndex: 99,
+          zIndex: 999,
           transition: "left 0.3s",
         }}
-        className={`admin-sidebar ${sidebarOpen ? "open" : ""}`}
+        className={`admin-sidebar${sidebarOpen ? " open" : ""}`}
       >
-        {/* Logo */}
+        {/* Logo + Close */}
         <div
           style={{
             padding: "20px",
@@ -164,15 +173,26 @@ export default function AdminLayout({
             </div>
           </Link>
 
+          {/* ✅ Close Button (mobile only) */}
           <button
-            onClick={() => setSidebarOpen(false)}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              closeSidebar();
+            }}
             style={{
-              background: "transparent",
-              border: "none",
-              color: "#94a3b8",
+              background: "rgba(255,255,255,0.05)",
+              borderWidth: "1px",
+              borderStyle: "solid",
+              borderColor: "rgba(255,255,255,0.1)",
+              color: "#f1f5f9",
               cursor: "pointer",
               display: "none",
-              padding: 4,
+              padding: 8,
+              borderRadius: "8px",
+              zIndex: 1001,
+              position: "relative",
             }}
             className="admin-close-btn"
           >
@@ -236,12 +256,11 @@ export default function AdminLayout({
 
         {/* Nav */}
         <nav style={{ flex: 1, padding: "12px 10px", overflowY: "auto" }}>
-          {/* Super Admin shortcut — only if superadmin */}
           {isSuperAdmin && (
             <>
               <Link
                 href="/superadmin/dashboard"
-                onClick={() => setSidebarOpen(false)}
+                onClick={closeSidebar}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -270,7 +289,6 @@ export default function AdminLayout({
             </>
           )}
 
-          {/* Standard admin nav */}
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href);
@@ -278,7 +296,7 @@ export default function AdminLayout({
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={() => setSidebarOpen(false)}
+                onClick={closeSidebar}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -334,13 +352,14 @@ export default function AdminLayout({
               gap: "10px",
               padding: "10px 12px",
               borderRadius: "10px",
-              border: "none",
+              borderWidth: "1px",
+              borderStyle: "solid",
+              borderColor: "rgba(239,68,68,0.3)",
               background: "rgba(239,68,68,0.1)",
               color: "#f87171",
               fontSize: "13px",
               fontWeight: 600,
               cursor: "pointer",
-              transition: "all 0.2s",
             }}
           >
             <LogOut size={16} />
@@ -349,7 +368,7 @@ export default function AdminLayout({
         </div>
       </aside>
 
-      {/* MAIN CONTENT */}
+      {/* ===== MAIN CONTENT ===== */}
       <div
         style={{
           flex: 1,
@@ -374,14 +393,18 @@ export default function AdminLayout({
           }}
         >
           <button
-            onClick={() => setSidebarOpen(true)}
+            type="button"
+            onClick={openSidebar}
             style={{
-              background: "transparent",
-              border: "none",
-              color: "#94a3b8",
+              background: "rgba(255,255,255,0.05)",
+              borderWidth: "1px",
+              borderStyle: "solid",
+              borderColor: "rgba(255,255,255,0.1)",
+              color: "#f1f5f9",
               cursor: "pointer",
               display: "none",
-              padding: 4,
+              padding: 8,
+              borderRadius: "8px",
             }}
             className="admin-menu-btn"
           >
@@ -404,14 +427,13 @@ export default function AdminLayout({
           </div>
         </div>
 
-        {/* Page content */}
         <div style={{ padding: "24px" }}>{children}</div>
       </div>
 
       <style>{`
         @media (max-width: 900px) {
           .admin-sidebar {
-            left: -260px;
+            left: -260px !important;
           }
           .admin-sidebar.open {
             left: 0 !important;
@@ -424,6 +446,9 @@ export default function AdminLayout({
           }
           .admin-close-btn {
             display: flex !important;
+          }
+          .admin-overlay {
+            display: block !important;
           }
         }
       `}</style>
